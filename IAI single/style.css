@@ -335,7 +335,8 @@ div[data-testid="stHorizontalBlock"]:has(.stTextInput) {
 }
 
 /* Prevent Streamlit's default stacking collapse for grid columns on small viewports */
-div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div[data-testid="column"] {
+div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div,
+div[data-testid="stHorizontalBlock"]:has(.stTextInput) div[data-testid="column"] {
     width: calc(100% / 9) !important;
     min-width: 0 !important;
     max-width: calc(100% / 9) !important;
@@ -359,18 +360,18 @@ div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div[data-testid="column
 }
 
 /* Thick vertical boundaries for 3x3 blocks inside the interactive input grid */
-div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div[data-testid="column"]:nth-child(3) input {
+div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div:nth-child(3) input {
     border-right: 3px solid #475569 !important;
 }
-div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div[data-testid="column"]:nth-child(6) input {
+div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div:nth-child(6) input {
     border-right: 3px solid #475569 !important;
 }
 
 /* Thick horizontal boundaries for 3x3 blocks inside the interactive input grid */
-div[data-testid="column"]:has(.stTextInput) > div[data-testid="stElementContainer"]:nth-child(3) input {
+div[data-testid="column"]:has(.stTextInput) div[data-testid="stElementContainer"]:nth-child(3) input {
     border-bottom: 3px solid #475569 !important;
 }
-div[data-testid="column"]:has(.stTextInput) > div[data-testid="stElementContainer"]:nth-child(6) input {
+div[data-testid="column"]:has(.stTextInput) div[data-testid="stElementContainer"]:nth-child(6) input {
     border-bottom: 3px solid #475569 !important;
 }
 
