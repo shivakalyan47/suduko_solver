@@ -2,6 +2,7 @@ import streamlit as st
 import time
 import os
 import copy
+import shutil
 from solver import (
     solve_sudoku_astar_generator,
     solve_sudoku_backtracking_generator,
@@ -12,10 +13,80 @@ from solver import (
     count_empty_cells
 )
 
+# Automatic runtime PWA asset injection and setup!
+# This ensures it works both locally on PC and hosted in the cloud (Streamlit Cloud)!
+def inject_pwa_assets():
+    try:
+        # Locate the static assets directory of the active Streamlit library installation
+        static_dir = os.path.join(os.path.dirname(st.__file__), "static")
+        if not os.path.exists(static_dir):
+            return
+
+        workspace_dir = os.path.dirname(__file__)
+        
+        # Define PWA assets inside our workspace
+        src_manifest = os.path.join(workspace_dir, "pwa_manifest.json")
+        src_sw = os.path.join(workspace_dir, "sw.js")
+        src_icon = os.path.join(workspace_dir, "pwa_icon.png")
+
+        dest_manifest = os.path.join(static_dir, "pwa_manifest.json")
+        dest_sw = os.path.join(static_dir, "sw.js")
+        dest_icon = os.path.join(static_dir, "pwa_icon.png")
+
+        # Copy the custom icon, manifest, and service worker to static assets
+        if os.path.exists(src_icon):
+            shutil.copy2(src_icon, dest_icon)
+        if os.path.exists(src_manifest):
+            shutil.copy2(src_manifest, dest_manifest)
+        if os.path.exists(src_sw):
+            shutil.copy2(src_sw, dest_sw)
+
+        # Inject PWA configuration links and scripts into active index.html
+        index_path = os.path.join(static_dir, "index.html")
+        if os.path.exists(index_path):
+            with open(index_path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            # Overwrite default index title
+            if "<title>Streamlit</title>" in content:
+                content = content.replace("<title>Streamlit</title>", "<title>Sudoku Solver</title>")
+
+            # Add PWA tags if not present
+            if "pwa_manifest.json" not in content:
+                pwa_tags = """
+    <!-- PWA Installation Support -->
+    <link rel="manifest" href="./pwa_manifest.json" />
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Sudoku Solver" />
+    <link rel="apple-touch-icon" href="./pwa_icon.png" />
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('PWA Service Worker registered successfully!', reg))
+            .catch(err => console.log('PWA Service Worker registration failed:', err));
+        });
+      }
+    </script>
+"""
+                if "<head>" in content:
+                    content = content.replace("<head>", "<head>" + pwa_tags)
+
+            with open(index_path, "w", encoding="utf-8") as f:
+                f.write(content)
+    except Exception as e:
+        pass
+
+# Run injection immediately
+inject_pwa_assets()
+
 # Page Configuration
 st.set_page_config(
-    page_title="Intelligent Sudoku Solver Agent Using A*",
-    page_icon="🧩",
+    page_title="Sudoku Solver",
+    page_icon=os.path.join(os.path.dirname(__file__), "pwa_icon.png") if os.path.exists(os.path.join(os.path.dirname(__file__), "pwa_icon.png")) else "🧩",
     layout="wide",
     initial_sidebar_state="expanded"
 )

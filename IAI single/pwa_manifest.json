@@ -1,5 +1,5 @@
 {
-  "name": "Intelligent Sudoku Solver",
+  "name": "Sudoku Solver",
   "short_name": "Sudoku Solver",
   "description": "Premium A* Heuristic-based Sudoku Solver Web Application.",
   "start_url": "./",
