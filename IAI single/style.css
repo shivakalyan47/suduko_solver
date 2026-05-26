@@ -16,6 +16,17 @@
     font-family: 'Outfit', sans-serif !important;
 }
 
+/* Limit the main app block to a beautiful centered width on desktop for unified vertical flow */
+@media (min-width: 1200px) {
+    .block-container {
+        max-width: 900px !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+        margin: 0 auto !important;
+    }
+}
+
+
 /* Glassmorphism Panel Container & Native Streamlit Bordered Containers */
 .glass-card, div[data-testid="stVerticalBlockBorderWrapper"] {
     background: rgba(255, 255, 255, 0.03) !important;
@@ -83,6 +94,23 @@
     transition: all 0.2s ease;
     user-select: none;
 }
+
+@media (max-width: 768px) {
+    .sudoku-cell {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sudoku-cell {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+}
+
 
 /* 3x3 block borders */
 .sudoku-cell.border-right-thick {
@@ -235,6 +263,39 @@ div[data-testid="stTextInput"] input {
     line-height: 48px !important;
 }
 
+/* Responsive scaling for interactive input grid */
+@media (max-width: 768px) {
+    div[data-testid="stTextInput"],
+    div[data-testid="stTextInput"] > div,
+    div[data-testid="stTextInput"] input {
+        width: 34px !important;
+        height: 34px !important;
+        max-width: 34px !important;
+        max-height: 34px !important;
+    }
+    .stTextInput input {
+        font-size: 16px !important;
+        line-height: 34px !important;
+        border-radius: 6px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    div[data-testid="stTextInput"],
+    div[data-testid="stTextInput"] > div,
+    div[data-testid="stTextInput"] input {
+        width: 28px !important;
+        height: 28px !important;
+        max-width: 28px !important;
+        max-height: 28px !important;
+    }
+    .stTextInput input {
+        font-size: 14px !important;
+        line-height: 28px !important;
+        border-radius: 4px !important;
+    }
+}
+
 /* Hover and Focus animations for high tactile comfort */
 .stTextInput input:hover {
     border-color: #8b5cf6 !important;
@@ -257,23 +318,42 @@ div[data-testid="column"] div[data-testid="stElementContainer"]:has(.stTextInput
 
 /* Tighten the horizontal spacing of the Sudoku grid columns specifically */
 div[data-testid="stHorizontalBlock"]:has(.stTextInput) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     gap: 4px !important;
     justify-content: center !important;
+    width: 100% !important;
+}
+
+/* Prevent Streamlit's default stacking collapse for grid columns on small viewports */
+@media (max-width: 768px) {
+    div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div[data-testid="column"] {
+        width: calc(100% / 9) !important;
+        min-width: 0 !important;
+        flex: 1 1 0% !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.stTextInput) {
+        gap: 2px !important;
+    }
 }
 
 /* Thick vertical boundaries for 3x3 blocks inside the interactive input grid */
-div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div[data-testid="column"]:nth-child(3),
-div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div[data-testid="column"]:nth-child(6) {
-    border-right: 3px solid #64748b !important;
-    padding-right: 8px !important;
+div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div[data-testid="column"]:nth-child(3) input {
+    border-right: 3px solid #475569 !important;
+}
+div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div[data-testid="column"]:nth-child(6) input {
+    border-right: 3px solid #475569 !important;
 }
 
 /* Thick horizontal boundaries for 3x3 blocks inside the interactive input grid */
-div[data-testid="column"]:has(.stTextInput) > div[data-testid="stElementContainer"]:nth-child(3),
-div[data-testid="column"]:has(.stTextInput) > div[data-testid="stElementContainer"]:nth-child(6) {
-    border-bottom: 3px solid #64748b !important;
-    padding-bottom: 6px !important;
+div[data-testid="column"]:has(.stTextInput) > div[data-testid="stElementContainer"]:nth-child(3) input {
+    border-bottom: 3px solid #475569 !important;
 }
+div[data-testid="column"]:has(.stTextInput) > div[data-testid="stElementContainer"]:nth-child(6) input {
+    border-bottom: 3px solid #475569 !important;
+}
+
 
 @media (prefers-color-scheme: light) {
     .stTextInput input {
