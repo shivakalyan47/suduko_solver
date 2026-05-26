@@ -83,12 +83,12 @@
 }
 
 .sudoku-cell {
-    width: 52px;
-    height: 52px;
+    width: 44px;
+    height: 44px;
     border: 1px solid rgba(148, 163, 184, 0.25);
     text-align: center;
     vertical-align: middle;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 600;
     padding: 0;
     transition: all 0.2s ease;
@@ -97,16 +97,16 @@
 
 @media (max-width: 768px) {
     .sudoku-cell {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
         font-size: 16px;
     }
 }
 
 @media (max-width: 480px) {
     .sudoku-cell {
-        width: 30px;
-        height: 30px;
+        width: 26px;
+        height: 26px;
         font-size: 14px;
     }
 }
@@ -243,24 +243,24 @@ div.stButton > button[key="visual_solve_button"]:hover {
 div[data-testid="stTextInput"],
 div[data-testid="stTextInput"] > div,
 div[data-testid="stTextInput"] input {
-    width: 48px !important;
-    height: 48px !important;
-    max-width: 48px !important;
-    max-height: 48px !important;
+    width: 44px !important;
+    height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
 }
 
 .stTextInput input {
     padding: 0 !important;
     text-align: center !important;
     font-family: 'Outfit', sans-serif !important;
-    font-size: 22px !important;
+    font-size: 20px !important;
     font-weight: 800 !important;
     border-radius: 8px !important;
     border: 1.5px solid rgba(148, 163, 184, 0.35) !important;
     background-color: rgba(255, 255, 255, 0.04) !important;
     color: inherit !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    line-height: 48px !important;
+    line-height: 44px !important;
 }
 
 /* Responsive scaling for interactive input grid */
@@ -268,14 +268,14 @@ div[data-testid="stTextInput"] input {
     div[data-testid="stTextInput"],
     div[data-testid="stTextInput"] > div,
     div[data-testid="stTextInput"] input {
-        width: 34px !important;
-        height: 34px !important;
-        max-width: 34px !important;
-        max-height: 34px !important;
+        width: 32px !important;
+        height: 32px !important;
+        max-width: 32px !important;
+        max-height: 32px !important;
     }
     .stTextInput input {
         font-size: 16px !important;
-        line-height: 34px !important;
+        line-height: 32px !important;
         border-radius: 6px !important;
     }
 }
@@ -284,14 +284,14 @@ div[data-testid="stTextInput"] input {
     div[data-testid="stTextInput"],
     div[data-testid="stTextInput"] > div,
     div[data-testid="stTextInput"] input {
-        width: 28px !important;
-        height: 28px !important;
-        max-width: 28px !important;
-        max-height: 28px !important;
+        width: 26px !important;
+        height: 26px !important;
+        max-width: 26px !important;
+        max-height: 26px !important;
     }
     .stTextInput input {
         font-size: 14px !important;
-        line-height: 28px !important;
+        line-height: 26px !important;
         border-radius: 4px !important;
     }
 }
@@ -316,6 +316,12 @@ div[data-testid="column"] div[data-testid="stElementContainer"]:has(.stTextInput
     padding-bottom: 0px !important;
 }
 
+@media (max-width: 768px) {
+    div[data-testid="column"] div[data-testid="stElementContainer"]:has(.stTextInput) {
+        margin-bottom: 2px !important;
+    }
+}
+
 /* Tighten the horizontal spacing of the Sudoku grid columns specifically */
 div[data-testid="stHorizontalBlock"]:has(.stTextInput) {
     display: flex !important;
@@ -324,16 +330,30 @@ div[data-testid="stHorizontalBlock"]:has(.stTextInput) {
     gap: 4px !important;
     justify-content: center !important;
     width: 100% !important;
+    max-width: 440px !important; /* Cap the container width globally to keep cells neat! */
+    margin: 0 auto !important;
 }
 
 /* Prevent Streamlit's default stacking collapse for grid columns on small viewports */
+div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div[data-testid="column"] {
+    width: calc(100% / 9) !important;
+    min-width: 0 !important;
+    max-width: calc(100% / 9) !important;
+    flex: 1 1 0% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
 @media (max-width: 768px) {
-    div[data-testid="stHorizontalBlock"]:has(.stTextInput) > div[data-testid="column"] {
-        width: calc(100% / 9) !important;
-        min-width: 0 !important;
-        flex: 1 1 0% !important;
-    }
     div[data-testid="stHorizontalBlock"]:has(.stTextInput) {
+        max-width: 320px !important;
+        gap: 2px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    div[data-testid="stHorizontalBlock"]:has(.stTextInput) {
+        max-width: 270px !important;
         gap: 2px !important;
     }
 }
