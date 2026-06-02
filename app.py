@@ -84,6 +84,16 @@ def inject_pwa_assets():
       window.addEventListener('error', (e) => reloadOnImportError(e.message || (e.error && e.error.message)), true);
       window.addEventListener('unhandledrejection', (e) => reloadOnImportError(e.reason && e.reason.message));
 
+      // DOM fallback observer to catch errors captured and displayed by React's Error Boundary
+      const checkDomForError = () => {
+        const bodyText = document.body ? document.body.textContent : '';
+        if (bodyText.includes('Failed to fetch dynamically imported module') || 
+            bodyText.includes('TypeError: Failed to fetch')) {
+          reloadOnImportError('dynamically imported module');
+        }
+      };
+      setInterval(checkDomForError, 1000);
+
       if ('serviceWorker' in navigator) {
         // Reload page when the new service worker takes over and purges cache
         let refreshing = false;
