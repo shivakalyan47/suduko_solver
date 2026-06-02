@@ -10,7 +10,8 @@ from solver import (
     PRESETS,
     is_valid_board,
     generate_random_puzzle_board,
-    count_empty_cells
+    count_empty_cells,
+    get_mrv_cell
 )
 
 # Automatic runtime PWA asset injection and setup!
