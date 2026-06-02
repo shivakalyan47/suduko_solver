@@ -176,9 +176,10 @@ else:
 
 # Helper to sync input cells back to session state board
 def sync_input_to_board():
+    version = st.session_state.get("widget_version", 0)
     for r in range(9):
         for c in range(9):
-            key = f"cell_input_{r}_{c}"
+            key = f"cell_input_{r}_{c}_{version}"
             if key in st.session_state:
                 val_str = st.session_state[key].strip()
                 if val_str.isdigit() and 1 <= int(val_str) <= 9:
@@ -189,9 +190,10 @@ def sync_input_to_board():
 # Helper to force-sync session state widget inputs from the actual board representation
 # This overrides Streamlit's internal widget caching bug!
 def update_inputs_from_board():
+    version = st.session_state.get("widget_version", 0)
     for r in range(9):
         for c in range(9):
-            key = f"cell_input_{r}_{c}"
+            key = f"cell_input_{r}_{c}_{version}"
             val = st.session_state.board[r][c]
             st.session_state[key] = str(val) if val != 0 else ""
 
@@ -206,6 +208,7 @@ def on_preset_change():
     st.session_state.solving_time = 0.0
     st.session_state.active_cell = None
     st.session_state.is_visualizing = False
+    st.session_state.widget_version += 1
     update_inputs_from_board()
 
 def on_difficulty_change():
@@ -219,6 +222,7 @@ def on_difficulty_change():
     st.session_state.solving_time = 0.0
     st.session_state.active_cell = None
     st.session_state.is_visualizing = False
+    st.session_state.widget_version += 1
     update_inputs_from_board()
 
 # Initialize Session State
@@ -242,6 +246,8 @@ if "solving_mode" not in st.session_state:
     st.session_state.solving_mode = "🤖 AI Solver"
 if "play_message" not in st.session_state:
     st.session_state.play_message = ""
+if "widget_version" not in st.session_state:
+    st.session_state.widget_version = 0
 
 # Sidebar Controls
 with st.sidebar:
@@ -277,6 +283,7 @@ with st.sidebar:
             st.session_state.solving_time = 0.0
             st.session_state.active_cell = None
             st.session_state.is_visualizing = False
+            st.session_state.widget_version += 1
             update_inputs_from_board()
             st.rerun()
             
@@ -300,7 +307,9 @@ with st.sidebar:
             st.session_state.solving_time = 0.0
             st.session_state.active_cell = None
             st.session_state.is_visualizing = False
+            st.session_state.widget_version += 1
             update_inputs_from_board()
+            st.rerun()
             
         st.markdown("---")
         
@@ -343,6 +352,7 @@ with st.sidebar:
             st.session_state.solving_time = 0.0
             st.session_state.active_cell = None
             st.session_state.is_visualizing = False
+            st.session_state.widget_version += 1
             update_inputs_from_board()
             st.rerun()
             
@@ -467,7 +477,7 @@ with st.container(border=True):
                             label=f"r{r}c{c}",
                             value=val_str,
                             max_chars=1,
-                            key=f"cell_input_{r}_{c}",
+                            key=f"cell_input_{r}_{c}_{st.session_state.get('widget_version', 0)}",
                             label_visibility="collapsed",
                             on_change=sync_input_to_board
                         )
@@ -575,6 +585,8 @@ if (visual_btn or instant_btn) and st.session_state.solving_mode == "🤖 AI Sol
                     
             st.session_state.is_visualizing = False
             st.session_state.active_cell = None
+            st.session_state.widget_version += 1
+            update_inputs_from_board()
             st.rerun()
             
         else:
@@ -609,6 +621,8 @@ if (visual_btn or instant_btn) and st.session_state.solving_mode == "🤖 AI Sol
             st.session_state.solving_time = time.time() - start_time
             st.session_state.is_visualizing = False
             st.session_state.active_cell = None
+            st.session_state.widget_version += 1
+            update_inputs_from_board()
             st.rerun()
 
 elif verify_btn and st.session_state.solving_mode == "✍️ Play Manually":
@@ -667,6 +681,7 @@ elif hint_btn and st.session_state.solving_mode == "✍️ Play Manually":
                     st.session_state.board[r][c] = correct_val
                     st.session_state.solving_status = "user_solvable"
                     st.session_state.play_message = f"💡 Hint: Placed correct number {correct_val} at Row {r+1}, Column {c+1}!"
+                    st.session_state.widget_version += 1
                     update_inputs_from_board()
                     st.rerun()
             else:
@@ -686,6 +701,7 @@ elif reveal_all_btn and st.session_state.solving_mode == "✍️ Play Manually":
             st.session_state.solving_status = "solved"
             st.session_state.solving_time = 0.0
             st.session_state.explored_states = explored_ref[0]
+            st.session_state.widget_version += 1
             update_inputs_from_board()
             st.rerun()
         else:
