@@ -142,8 +142,9 @@ if os.path.exists(CSS_PATH):
     with open(CSS_PATH, "r", encoding="utf-8") as f:
         css_content = f.read()
     
-    # Generate exact cell CSS for border boundaries and checkerboard colors
+    # Generate exact cell CSS for border boundaries, checkerboard colors, and hint highlights
     dynamic_css = []
+    hint_cell = st.session_state.get("hint_cell")
     for r in range(9):
         for c in range(9):
             border_right = "4px solid #475569" if c in [2, 5] else ("none" if c == 8 else "1px solid #475569")
@@ -151,21 +152,30 @@ if os.path.exists(CSS_PATH):
             box_r, box_c = r // 3, c // 3
             bg_color = "#1e293b" if (box_r + box_c) % 2 == 0 else "#0f172a"
             
+            # Apply premium dark amber background and inset gold glow if it's the hinted cell
+            is_hint = (hint_cell == (r, c))
+            if is_hint:
+                bg_color = "#451a03"  # Deep dark amber
+                inset_shadow = "box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.8) !important;"
+            else:
+                inset_shadow = ""
+                
             dynamic_css.append(f"""
-            .st-key-cell_input_{r}_{c} [data-testid="stTextInputRootElement"] {{
+            [class*="cell_input_{r}_{c}_"] [data-testid="stTextInputRootElement"] {{
                 background-color: {bg_color} !important;
                 border-right: {border_right} !important;
                 border-bottom: {border_bottom} !important;
                 border-left: none !important;
                 border-top: none !important;
                 border-radius: 0px !important;
+                {inset_shadow}
             }}
-            .st-key-cell_input_{r}_{c} [data-testid="stTextInputRootElement"]:hover {{
-                background-color: #2b394f !important;
+            [class*="cell_input_{r}_{c}_"] [data-testid="stTextInputRootElement"]:hover {{
+                background-color: {"#5c2205" if is_hint else "#2b394f"} !important;
             }}
-            .st-key-cell_input_{r}_{c} [data-testid="stTextInputRootElement"]:focus-within {{
-                background-color: #334155 !important;
-                box-shadow: inset 0 0 5px rgba(20, 184, 166, 0.4) !important;
+            [class*="cell_input_{r}_{c}_"] [data-testid="stTextInputRootElement"]:focus-within {{
+                background-color: {"#7c2d12" if is_hint else "#334155"} !important;
+                box-shadow: {"inset 0 0 10px rgba(245, 158, 11, 0.8)" if is_hint else "inset 0 0 5px rgba(20, 184, 166, 0.4)"} !important;
             }}
             """)
             
@@ -182,10 +192,10 @@ def sync_input_to_board():
             key = f"cell_input_{r}_{c}_{version}"
             if key in st.session_state:
                 val_str = st.session_state[key].strip()
-                if val_str.isdigit() and 1 <= int(val_str) <= 9:
-                    st.session_state.board[r][c] = int(val_str)
-                else:
-                    st.session_state.board[r][c] = 0
+                val = int(val_str) if (val_str.isdigit() and 1 <= int(val_str) <= 9) else 0
+                if val != st.session_state.board[r][c]:
+                    st.session_state.board[r][c] = val
+                    st.session_state.hint_cell = None
 
 # Helper to force-sync session state widget inputs from the actual board representation
 # This overrides Streamlit's internal widget caching bug!
@@ -208,6 +218,7 @@ def on_preset_change():
     st.session_state.solving_time = 0.0
     st.session_state.active_cell = None
     st.session_state.is_visualizing = False
+    st.session_state.hint_cell = None
     st.session_state.widget_version += 1
     update_inputs_from_board()
 
@@ -222,6 +233,7 @@ def on_difficulty_change():
     st.session_state.solving_time = 0.0
     st.session_state.active_cell = None
     st.session_state.is_visualizing = False
+    st.session_state.hint_cell = None
     st.session_state.widget_version += 1
     update_inputs_from_board()
 
@@ -248,6 +260,8 @@ if "play_message" not in st.session_state:
     st.session_state.play_message = ""
 if "widget_version" not in st.session_state:
     st.session_state.widget_version = 0
+if "hint_cell" not in st.session_state:
+    st.session_state.hint_cell = None
 
 # Sidebar Controls
 with st.sidebar:
@@ -283,6 +297,7 @@ with st.sidebar:
             st.session_state.solving_time = 0.0
             st.session_state.active_cell = None
             st.session_state.is_visualizing = False
+            st.session_state.hint_cell = None
             st.session_state.widget_version += 1
             update_inputs_from_board()
             st.rerun()
@@ -307,6 +322,7 @@ with st.sidebar:
             st.session_state.solving_time = 0.0
             st.session_state.active_cell = None
             st.session_state.is_visualizing = False
+            st.session_state.hint_cell = None
             st.session_state.widget_version += 1
             update_inputs_from_board()
             st.rerun()
@@ -352,6 +368,7 @@ with st.sidebar:
             st.session_state.solving_time = 0.0
             st.session_state.active_cell = None
             st.session_state.is_visualizing = False
+            st.session_state.hint_cell = None
             st.session_state.widget_version += 1
             update_inputs_from_board()
             st.rerun()
@@ -681,6 +698,7 @@ elif hint_btn and st.session_state.solving_mode == "✍️ Play Manually":
                     st.session_state.board[r][c] = correct_val
                     st.session_state.solving_status = "user_solvable"
                     st.session_state.play_message = f"💡 Hint: Placed correct number {correct_val} at Row {r+1}, Column {c+1}!"
+                    st.session_state.hint_cell = (r, c)
                     st.session_state.widget_version += 1
                     update_inputs_from_board()
                     st.rerun()
@@ -701,6 +719,7 @@ elif reveal_all_btn and st.session_state.solving_mode == "✍️ Play Manually":
             st.session_state.solving_status = "solved"
             st.session_state.solving_time = 0.0
             st.session_state.explored_states = explored_ref[0]
+            st.session_state.hint_cell = None
             st.session_state.widget_version += 1
             update_inputs_from_board()
             st.rerun()
