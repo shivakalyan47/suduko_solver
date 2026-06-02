@@ -1,28 +1,17 @@
-const CACHE_NAME = 'sudoku-solver-cache-v1';
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './pwa_manifest.json',
-  './pwa_icon.png',
-  './favicon.png'
-];
+const CACHE_NAME = 'sudoku-solver-cache-v2';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
-  );
+  // Skip waiting to activate the service worker immediately
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
+  // Clear all caches to ensure no stale index.html or bundle files are served
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
-          }
+          return caches.delete(cache);
         })
       );
     }).then(() => self.clients.claim())
@@ -30,12 +19,8 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request);
-    })
-  );
+  // Pass-through network requests.
+  // Streamlit apps run completely dynamically using WebSockets and cannot run offline.
+  // Caching index.html or chunk files causes Vite dynamic import failures upon redeployment.
+  event.respondWith(fetch(event.request));
 });

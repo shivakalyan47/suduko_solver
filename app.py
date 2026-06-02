@@ -51,7 +51,14 @@ def inject_pwa_assets():
             if "<title>Streamlit</title>" in content:
                 content = content.replace("<title>Streamlit</title>", "<title>Sudoku Solver</title>")
 
-            # Add PWA tags if not present
+            # Remove old PWA tags if they exist to allow updates to the PWA tag block
+            if "<!-- PWA Installation Support -->" in content:
+                start_idx = content.find("<!-- PWA Installation Support -->")
+                end_idx = content.find("</script>", start_idx)
+                if end_idx != -1:
+                    content = content[:start_idx] + content[end_idx + len("</script>"):]
+
+            # Add updated PWA tags if not present
             if "pwa_manifest.json" not in content:
                 pwa_tags = """
     <!-- PWA Installation Support -->
@@ -63,10 +70,37 @@ def inject_pwa_assets():
     <meta name="apple-mobile-web-app-title" content="Sudoku Solver" />
     <link rel="apple-touch-icon" href="./pwa_icon.png" />
     <script>
+      // Self-healing reload for Vite dynamic import errors
+      const reloadOnImportError = (msg) => {
+        if (msg && (msg.includes('dynamically imported module') || msg.includes('Failed to fetch'))) {
+          const lastReload = sessionStorage.getItem('last_pwa_reload');
+          const now = Date.now();
+          if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+            sessionStorage.setItem('last_pwa_reload', now.toString());
+            window.location.reload();
+          }
+        }
+      };
+      window.addEventListener('error', (e) => reloadOnImportError(e.message || (e.error && e.error.message)), true);
+      window.addEventListener('unhandledrejection', (e) => reloadOnImportError(e.reason && e.reason.message));
+
       if ('serviceWorker' in navigator) {
+        // Reload page when the new service worker takes over and purges cache
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('PWA Service Worker registered successfully!', reg))
+            .then(reg => {
+              console.log('PWA Service Worker registered successfully!', reg);
+              // Proactively check for updates on load
+              reg.update();
+            })
             .catch(err => console.log('PWA Service Worker registration failed:', err));
         });
       }
